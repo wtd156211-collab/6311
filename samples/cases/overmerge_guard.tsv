@@ -1,0 +1,22 @@
+news	new	保护词：news 不得被剥成 new
+series	serie	保护词：serie 不是 series 的归一形式
+species	specie	保护词：specie 不是 species 的归一形式
+status	statu	保护词：status 不得被剥成 statu
+focus	focu	保护词：focus 不得被剥成 focu
+bus	bu	保护词：bus 不得被剥成 bu
+this	thi	保护词：this 不是复数
+his	hi	保护词：his 不是复数
+yes	ye	保护词：yes 不是复数
+plus	plu	保护词：plus 不是复数
+analysis	analysi	保护词：analysis 不是复数
+submit	submission	派生词不合并
+work	worker	派生词不合并
+teach	teacher	派生词不合并
+hope	hop	修补口径：补 e 与双写去重互不串门
+hoping	hopping	修补口径：hoping 归 hope，hopping 归 hop
+hoped	hopped	修补口径：hoped 归 hope，hopped 归 hop
+honest	hon	est 只在词干为表内形容词或副词时剥离
+offer	off	er 只在词干为表内形容词或副词时剥离
+water	wat	er 只在词干为表内形容词或副词时剥离
+large	larg	修补口径：先补 e 再查词表
+run	runner	er 只在词干为表内形容词或副词时剥离
