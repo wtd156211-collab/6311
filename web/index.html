@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>词形归一 · 族簇连线图</title>
+<style>
+  html, body { margin: 0; height: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  #bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2;
+    background: #1f2430; color: #e8eaf0; padding: 8px 14px; font-size: 13px;
+    display: flex; gap: 18px; align-items: baseline; white-space: nowrap; overflow-x: auto;
+  }
+  #bar b { color: #8fd3ff; font-weight: 600; }
+  #bar .bad { color: #ff7b72; font-weight: 600; }
+  #bar .hint { color: #9aa3b2; font-size: 12px; }
+  #cv { position: fixed; top: 38px; left: 0; cursor: default; }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<canvas id="cv"></canvas>
+<script>
+"use strict";
+const DATA = {"words":["cat","cats","dog","dogs","box","boxes","bus","buses","gas","gases","church","churches","dish","dishes","class","classes","glass","glasses","boss","bosses","city","cities","baby","babies","story","stories","country","countries","leaf","leaves","knife","knives","wife","wives","wolf","wolves","shelf","shelves","child","children","man","men","woman","women","tooth","teeth","foot","feet","mouse","mice","analysis","analyses","series","species","news","status","campus","canvas","atlas","focus","focuses","worker","workers","teacher","teachers","user","users","item","items","token","tokens","table","tables","page","pages","submission","submissions","water","submit","submits","submitted","submitting","work","works","worked","working","run","runs","ran","running","hop","hops","hopped","hopping","hope","hopes","hoped","hoping","stop","stops","stopped","stopping","plan","plans","planned","planning","drop","drops","dropped","dropping","open","opens","opened","opening","use","uses","used","using","make","makes","made","making","write","writes","wrote","written","writing","do","does","did","done","doing","go","goes","went","gone","going","have","has","had","having","be","am","is","are","was","were","been","being","see","sees","saw","seen","seeing","teach","teaches","taught","teaching","watch","watches","watched","watching","look","looks","looked","looking","click","clicks","clicked","clicking","add","adds","added","adding","pass","passes","passed","passing","press","presses","pressed","pressing","fix","fixes","fixed","fixing","try","tries","tried","trying","carry","carries","carried","carrying","play","plays","played","playing","need","needs","needed","needing","start","starts","started","starting","call","calls","called","calling","fill","fills","filled","filling","visit","visits","visited","visiting","edit","edits","edited","editing","limit","limits","limited","limiting","offer","offers","offered","offering","cover","covers","covered","covering","filter","filters","filtered","filtering","order","orders","ordered","ordering","house","houses","housed","housing","score","scores","scored","scoring","value","values","group","groups","grouped","grouping","result","results","resulted","resulting","report","reports","reported","reporting","record","records","recorded","recording","search","searches","searched","searching","query","queries","queried","querying","index","indexes","indexed","indexing","study","studies","studied","studying","file","files","filed","filing","book","books","booked","booking","big","bigger","biggest","small","smaller","smallest","fast","faster","fastest","slow","slower","slowest","high","higher","highest","deep","deeper","deepest","quick","quicker","quickest","strong","stronger","strongest","nice","nicer","nicest","safe","safer","safest","wide","wider","widest","large","larger","largest","happy","happier","happiest","easy","easier","easiest","busy","busier","busiest","early","earlier","earliest","healthy","healthier","healthiest","honest","new","newer","newest","good","better","best","bad","worse","worst","far","farther","further","farthest","furthest","many","more","most","much","few","fewer","fewest","little","less","least","yes","this","his","plus"],"families":[{"stem":"add","members":["add","added","adding","adds"],"bad":false},{"stem":"analysis","members":["analyses","analysis"],"bad":false},{"stem":"atlas","members":["atlas"],"bad":false},{"stem":"baby","members":["babies","baby"],"bad":false},{"stem":"bad","members":["bad","worse","worst"],"bad":false},{"stem":"be","members":["am","are","be","been","being","is","was","were"],"bad":false},{"stem":"big","members":["big","bigger","biggest"],"bad":false},{"stem":"book","members":["book","booked","booking","books"],"bad":false},{"stem":"boss","members":["boss","bosses"],"bad":false},{"stem":"box","members":["box","boxes"],"bad":false},{"stem":"bus","members":["bus","buses"],"bad":false},{"stem":"busy","members":["busier","busiest","busy"],"bad":false},{"stem":"call","members":["call","called","calling","calls"],"bad":false},{"stem":"campus","members":["campus"],"bad":false},{"stem":"canvas","members":["canvas"],"bad":false},{"stem":"carry","members":["carried","carries","carry","carrying"],"bad":false},{"stem":"cat","members":["cat","cats"],"bad":false},{"stem":"child","members":["child","children"],"bad":false},{"stem":"church","members":["church","churches"],"bad":false},{"stem":"city","members":["cities","city"],"bad":false},{"stem":"class","members":["class","classes"],"bad":false},{"stem":"click","members":["click","clicked","clicking","clicks"],"bad":false},{"stem":"country","members":["countries","country"],"bad":false},{"stem":"cover","members":["cover","covered","covering","covers"],"bad":false},{"stem":"deep","members":["deep","deeper","deepest"],"bad":false},{"stem":"dish","members":["dish","dishes"],"bad":false},{"stem":"do","members":["did","do","does","doing","done"],"bad":false},{"stem":"dog","members":["dog","dogs"],"bad":false},{"stem":"drop","members":["drop","dropped","dropping","drops"],"bad":false},{"stem":"early","members":["earlier","earliest","early"],"bad":false},{"stem":"easy","members":["easier","easiest","easy"],"bad":false},{"stem":"edit","members":["edit","edited","editing","edits"],"bad":false},{"stem":"far","members":["far","farther","farthest","further","furthest"],"bad":false},{"stem":"fast","members":["fast","faster","fastest"],"bad":false},{"stem":"few","members":["few","fewer","fewest"],"bad":false},{"stem":"file","members":["file","filed","files","filing"],"bad":false},{"stem":"fill","members":["fill","filled","filling","fills"],"bad":false},{"stem":"filter","members":["filter","filtered","filtering","filters"],"bad":false},{"stem":"fix","members":["fix","fixed","fixes","fixing"],"bad":false},{"stem":"focus","members":["focus","focuses"],"bad":false},{"stem":"foot","members":["feet","foot"],"bad":false},{"stem":"gas","members":["gas","gases"],"bad":false},{"stem":"glass","members":["glass","glasses"],"bad":false},{"stem":"go","members":["go","goes","going","gone","went"],"bad":false},{"stem":"good","members":["best","better","good"],"bad":false},{"stem":"group","members":["group","grouped","grouping","groups"],"bad":false},{"stem":"happy","members":["happier","happiest","happy"],"bad":false},{"stem":"have","members":["had","has","have","having"],"bad":false},{"stem":"healthy","members":["healthier","healthiest","healthy"],"bad":false},{"stem":"high","members":["high","higher","highest"],"bad":false},{"stem":"his","members":["his"],"bad":false},{"stem":"honest","members":["honest"],"bad":false},{"stem":"hop","members":["hop","hopped","hopping","hops"],"bad":false},{"stem":"hope","members":["hope","hoped","hopes","hoping"],"bad":false},{"stem":"house","members":["house","housed","houses","housing"],"bad":false},{"stem":"index","members":["index","indexed","indexes","indexing"],"bad":false},{"stem":"item","members":["item","items"],"bad":false},{"stem":"knife","members":["knife","knives"],"bad":false},{"stem":"large","members":["large","larger","largest"],"bad":false},{"stem":"leaf","members":["leaf","leaves"],"bad":false},{"stem":"limit","members":["limit","limited","limiting","limits"],"bad":false},{"stem":"little","members":["least","less","little"],"bad":false},{"stem":"look","members":["look","looked","looking","looks"],"bad":false},{"stem":"make","members":["made","make","makes","making"],"bad":false},{"stem":"man","members":["man","men"],"bad":false},{"stem":"many","members":["many","more","most"],"bad":false},{"stem":"mouse","members":["mice","mouse"],"bad":false},{"stem":"much","members":["much"],"bad":false},{"stem":"need","members":["need","needed","needing","needs"],"bad":false},{"stem":"new","members":["new","newer","newest"],"bad":false},{"stem":"news","members":["news"],"bad":false},{"stem":"nice","members":["nice","nicer","nicest"],"bad":false},{"stem":"offer","members":["offer","offered","offering","offers"],"bad":false},{"stem":"open","members":["open","opened","opening","opens"],"bad":false},{"stem":"order","members":["order","ordered","ordering","orders"],"bad":false},{"stem":"page","members":["page","pages"],"bad":false},{"stem":"pass","members":["pass","passed","passes","passing"],"bad":false},{"stem":"plan","members":["plan","planned","planning","plans"],"bad":false},{"stem":"play","members":["play","played","playing","plays"],"bad":false},{"stem":"plus","members":["plus"],"bad":false},{"stem":"press","members":["press","pressed","presses","pressing"],"bad":false},{"stem":"query","members":["queried","queries","query","querying"],"bad":false},{"stem":"quick","members":["quick","quicker","quickest"],"bad":false},{"stem":"record","members":["record","recorded","recording","records"],"bad":false},{"stem":"report","members":["report","reported","reporting","reports"],"bad":false},{"stem":"result","members":["result","resulted","resulting","results"],"bad":false},{"stem":"run","members":["ran","run","running","runs"],"bad":false},{"stem":"safe","members":["safe","safer","safest"],"bad":false},{"stem":"score","members":["score","scored","scores","scoring"],"bad":false},{"stem":"search","members":["search","searched","searches","searching"],"bad":false},{"stem":"see","members":["saw","see","seeing","seen","sees"],"bad":false},{"stem":"series","members":["series"],"bad":false},{"stem":"shelf","members":["shelf","shelves"],"bad":false},{"stem":"slow","members":["slow","slower","slowest"],"bad":false},{"stem":"small","members":["small","smaller","smallest"],"bad":false},{"stem":"species","members":["species"],"bad":false},{"stem":"start","members":["start","started","starting","starts"],"bad":false},{"stem":"status","members":["status"],"bad":false},{"stem":"stop","members":["stop","stopped","stopping","stops"],"bad":false},{"stem":"story","members":["stories","story"],"bad":false},{"stem":"strong","members":["strong","stronger","strongest"],"bad":false},{"stem":"study","members":["studied","studies","study","studying"],"bad":false},{"stem":"submission","members":["submission","submissions"],"bad":false},{"stem":"submit","members":["submit","submits","submitted","submitting"],"bad":false},{"stem":"table","members":["table","tables"],"bad":false},{"stem":"teach","members":["taught","teach","teaches","teaching"],"bad":false},{"stem":"teacher","members":["teacher","teachers"],"bad":false},{"stem":"this","members":["this"],"bad":false},{"stem":"token","members":["token","tokens"],"bad":false},{"stem":"tooth","members":["teeth","tooth"],"bad":false},{"stem":"try","members":["tried","tries","try","trying"],"bad":false},{"stem":"use","members":["use","used","uses","using"],"bad":false},{"stem":"user","members":["user","users"],"bad":false},{"stem":"value","members":["value","values"],"bad":false},{"stem":"visit","members":["visit","visited","visiting","visits"],"bad":false},{"stem":"watch","members":["watch","watched","watches","watching"],"bad":false},{"stem":"water","members":["water"],"bad":false},{"stem":"wide","members":["wide","wider","widest"],"bad":false},{"stem":"wife","members":["wife","wives"],"bad":false},{"stem":"wolf","members":["wolf","wolves"],"bad":false},{"stem":"woman","members":["woman","women"],"bad":false},{"stem":"work","members":["work","worked","working","works"],"bad":false},{"stem":"worker","members":["worker","workers"],"bad":false},{"stem":"write","members":["write","writes","writing","written","wrote"],"bad":false},{"stem":"yes","members":["yes"],"bad":false}],"badPairs":0,"totalPairs":459,"ratio":0.0};
+
+const ROW_H = 22, LEFT_X = 70, RIGHT_OFFSET = 300, TOP_PAD = 8;
+const canvas = document.getElementById("cv");
+const ctx = canvas.getContext("2d");
+const bar = document.getElementById("bar");
+
+// 行布局：每个族占 members.length 行；右侧节点放在该族中间行。
+const rows = [];        // {word, fam}
+const famY = [];        // 每个族右侧节点的 y（内容坐标）
+const famTop = [];      // 每个族首行 y
+let y = TOP_PAD;
+DATA.families.forEach((fam, fi) => {
+  famTop[fi] = y;
+  fam.members.forEach((w) => { rows.push({ word: w, fam: fi }); y += ROW_H; });
+  famY[fi] = famTop[fi] + (fam.members.length - 1) * ROW_H / 2;
+});
+const contentH = y + TOP_PAD;
+
+let scrollY = 0, selected = -1, vw = 0, vh = 0, dpr = 1;
+
+function rightX() { return Math.max(LEFT_X + 260, vw - RIGHT_OFFSET); }
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  vw = window.innerWidth; vh = window.innerHeight - 38;
+  canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
+  canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
+  draw();
+}
+
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, vw, vh);
+  ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
+  ctx.textBaseline = "middle";
+  const rx = rightX();
+  const first = Math.max(0, Math.floor(scrollY / ROW_H) - 1);
+  const last = Math.min(rows.length - 1, Math.ceil((scrollY + vh) / ROW_H) + 1);
+  const drawnFam = new Set();
+  for (let i = first; i <= last; i++) {
+    const row = rows[i];
+    const ry = TOP_PAD + i * ROW_H - scrollY + ROW_H / 2;
+    const fam = DATA.families[row.fam];
+    const dim = selected !== -1 && selected !== row.fam;
+    // 连线
+    ctx.strokeStyle = fam.bad ? "rgba(255,90,90," + (dim ? 0.15 : 0.55) + ")"
+                              : "rgba(120,150,200," + (dim ? 0.10 : 0.35) + ")";
+    ctx.lineWidth = selected === row.fam ? 1.6 : 1;
+    ctx.beginPath();
+    ctx.moveTo(LEFT_X + ctx.measureText(row.word).width + 8, ry);
+    ctx.lineTo(rx - 8, famY[row.fam] - scrollY + ROW_H / 2);
+    ctx.stroke();
+    // 左节点（原词）
+    ctx.fillStyle = dim ? "#c8ccd4" : (fam.bad ? "#c0392b" : "#1f2430");
+    ctx.fillText(row.word, LEFT_X, ry);
+    if (!drawnFam.has(row.fam)) {
+      drawnFam.add(row.fam);
+      const fy = famY[row.fam] - scrollY + ROW_H / 2;
+      if (fy > -ROW_H && fy < vh + ROW_H) {
+        ctx.fillStyle = fam.bad ? "#ff5a5a" : (dim ? "#b9c2d0" : "#2f6fed");
+        ctx.beginPath(); ctx.arc(rx, fy, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = dim ? "#c8ccd4" : (fam.bad ? "#c0392b" : "#1f2430");
+        ctx.fillText(fam.stem, rx + 12, fy);
+      }
+    }
+  }
+  // 顶部列标题
+  ctx.fillStyle = "#9aa3b2";
+  ctx.fillText("词形", LEFT_X, 10);
+  ctx.fillText("归一形式", rx + 12, 10);
+}
+
+function pickFamily(mx, my) {
+  const cy = my + scrollY - ROW_H / 2;
+  if (mx > rightX() - 160) {
+    let best = -1, bestD = 1e9;
+    for (let fi = 0; fi < DATA.families.length; fi++) {
+      const d = Math.abs(famY[fi] + ROW_H / 2 - cy);
+      if (d < bestD) { bestD = d; best = fi; }
+    }
+    return bestD <= ROW_H ? best : -1;
+  }
+  const i = Math.floor(cy / ROW_H);
+  return (i >= 0 && i < rows.length) ? rows[i].fam : -1;
+}
+
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  scrollY = Math.max(0, Math.min(contentH - vh, scrollY + e.deltaY));
+  draw();
+}, { passive: false });
+
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const fi = pickFamily(e.clientX - rect.left, e.clientY - rect.top);
+  selected = (fi === selected) ? -1 : fi;
+  draw();
+});
+
+function fmtPct(x) { return (x * 100).toFixed(1) + "%"; }
+const nWords = DATA.words.length, nFam = DATA.families.length;
+const collapse = nWords ? 1 - nFam / nWords : 0;
+const badFamCount = DATA.families.filter(f => f.bad).length;
+bar.innerHTML =
+  "<span>词形数 <b>" + nWords + "</b></span>" +
+  "<span>族数 <b>" + nFam + "</b></span>" +
+  "<span>折叠率 <b>" + fmtPct(collapse) + "</b></span>" +
+  "<span class='" + (DATA.badPairs ? "bad" : "") + "'>错误合并 <b>" +
+    DATA.badPairs + "/" + DATA.totalPairs + " 对（" + fmtPct(DATA.ratio) +
+    "）</b>，错误簇 <b>" + badFamCount + "</b></span>" +
+  "<span class='hint'>滚轮滚动 · 点击右侧节点高亮族成员 · 红色为错误合并</span>";
+
+window.addEventListener("resize", resize);
+resize();
+</script>
+</body>
+</html>

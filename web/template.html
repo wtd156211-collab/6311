@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>词形归一 · 族簇连线图</title>
+<style>
+  html, body { margin: 0; height: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  #bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2;
+    background: #1f2430; color: #e8eaf0; padding: 8px 14px; font-size: 13px;
+    display: flex; gap: 18px; align-items: baseline; white-space: nowrap; overflow-x: auto;
+  }
+  #bar b { color: #8fd3ff; font-weight: 600; }
+  #bar .bad { color: #ff7b72; font-weight: 600; }
+  #bar .hint { color: #9aa3b2; font-size: 12px; }
+  #cv { position: fixed; top: 38px; left: 0; cursor: default; }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<canvas id="cv"></canvas>
+<script>
+"use strict";
+const DATA = /*__DATA__*/null;
+
+const ROW_H = 22, LEFT_X = 70, RIGHT_OFFSET = 300, TOP_PAD = 8;
+const canvas = document.getElementById("cv");
+const ctx = canvas.getContext("2d");
+const bar = document.getElementById("bar");
+
+// 行布局：每个族占 members.length 行；右侧节点放在该族中间行。
+const rows = [];        // {word, fam}
+const famY = [];        // 每个族右侧节点的 y（内容坐标）
+const famTop = [];      // 每个族首行 y
+let y = TOP_PAD;
+DATA.families.forEach((fam, fi) => {
+  famTop[fi] = y;
+  fam.members.forEach((w) => { rows.push({ word: w, fam: fi }); y += ROW_H; });
+  famY[fi] = famTop[fi] + (fam.members.length - 1) * ROW_H / 2;
+});
+const contentH = y + TOP_PAD;
+
+let scrollY = 0, selected = -1, vw = 0, vh = 0, dpr = 1;
+
+function rightX() { return Math.max(LEFT_X + 260, vw - RIGHT_OFFSET); }
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  vw = window.innerWidth; vh = window.innerHeight - 38;
+  canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
+  canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
+  draw();
+}
+
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, vw, vh);
+  ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
+  ctx.textBaseline = "middle";
+  const rx = rightX();
+  const first = Math.max(0, Math.floor(scrollY / ROW_H) - 1);
+  const last = Math.min(rows.length - 1, Math.ceil((scrollY + vh) / ROW_H) + 1);
+  const drawnFam = new Set();
+  for (let i = first; i <= last; i++) {
+    const row = rows[i];
+    const ry = TOP_PAD + i * ROW_H - scrollY + ROW_H / 2;
+    const fam = DATA.families[row.fam];
+    const dim = selected !== -1 && selected !== row.fam;
+    // 连线
+    ctx.strokeStyle = fam.bad ? "rgba(255,90,90," + (dim ? 0.15 : 0.55) + ")"
+                              : "rgba(120,150,200," + (dim ? 0.10 : 0.35) + ")";
+    ctx.lineWidth = selected === row.fam ? 1.6 : 1;
+    ctx.beginPath();
+    ctx.moveTo(LEFT_X + ctx.measureText(row.word).width + 8, ry);
+    ctx.lineTo(rx - 8, famY[row.fam] - scrollY + ROW_H / 2);
+    ctx.stroke();
+    // 左节点（原词）
+    ctx.fillStyle = dim ? "#c8ccd4" : (fam.bad ? "#c0392b" : "#1f2430");
+    ctx.fillText(row.word, LEFT_X, ry);
+    if (!drawnFam.has(row.fam)) {
+      drawnFam.add(row.fam);
+      const fy = famY[row.fam] - scrollY + ROW_H / 2;
+      if (fy > -ROW_H && fy < vh + ROW_H) {
+        ctx.fillStyle = fam.bad ? "#ff5a5a" : (dim ? "#b9c2d0" : "#2f6fed");
+        ctx.beginPath(); ctx.arc(rx, fy, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = dim ? "#c8ccd4" : (fam.bad ? "#c0392b" : "#1f2430");
+        ctx.fillText(fam.stem, rx + 12, fy);
+      }
+    }
+  }
+  // 顶部列标题
+  ctx.fillStyle = "#9aa3b2";
+  ctx.fillText("词形", LEFT_X, 10);
+  ctx.fillText("归一形式", rx + 12, 10);
+}
+
+function pickFamily(mx, my) {
+  const cy = my + scrollY - ROW_H / 2;
+  if (mx > rightX() - 160) {
+    let best = -1, bestD = 1e9;
+    for (let fi = 0; fi < DATA.families.length; fi++) {
+      const d = Math.abs(famY[fi] + ROW_H / 2 - cy);
+      if (d < bestD) { bestD = d; best = fi; }
+    }
+    return bestD <= ROW_H ? best : -1;
+  }
+  const i = Math.floor(cy / ROW_H);
+  return (i >= 0 && i < rows.length) ? rows[i].fam : -1;
+}
+
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  scrollY = Math.max(0, Math.min(contentH - vh, scrollY + e.deltaY));
+  draw();
+}, { passive: false });
+
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const fi = pickFamily(e.clientX - rect.left, e.clientY - rect.top);
+  selected = (fi === selected) ? -1 : fi;
+  draw();
+});
+
+function fmtPct(x) { return (x * 100).toFixed(1) + "%"; }
+const nWords = DATA.words.length, nFam = DATA.families.length;
+const collapse = nWords ? 1 - nFam / nWords : 0;
+const badFamCount = DATA.families.filter(f => f.bad).length;
+bar.innerHTML =
+  "<span>词形数 <b>" + nWords + "</b></span>" +
+  "<span>族数 <b>" + nFam + "</b></span>" +
+  "<span>折叠率 <b>" + fmtPct(collapse) + "</b></span>" +
+  "<span class='" + (DATA.badPairs ? "bad" : "") + "'>错误合并 <b>" +
+    DATA.badPairs + "/" + DATA.totalPairs + " 对（" + fmtPct(DATA.ratio) +
+    "）</b>，错误簇 <b>" + badFamCount + "</b></span>" +
+  "<span class='hint'>滚轮滚动 · 点击右侧节点高亮族成员 · 红色为错误合并</span>";
+
+window.addEventListener("resize", resize);
+resize();
+</script>
+</body>
+</html>
